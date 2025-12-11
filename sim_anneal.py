@@ -23,6 +23,7 @@ def acceptance(delta, T):
     return np.exp(-(delta/T)) > random.rand()
 
 
+deviation_too_much = False
 
 def sim_anneal(routes, node_dem_l, init_T = 1200, final_T = 1, alpha = 0.9, max_iter=1000):
     N = np.size(adj_cube, axis = 1)
@@ -34,21 +35,21 @@ def sim_anneal(routes, node_dem_l, init_T = 1200, final_T = 1, alpha = 0.9, max_
         
         for i in range(max_iter):
             # choose perturbation
+            if random.rand() > 0.5:
+                delta = routes.apply_reloc() 
+            else:
+                pass
+                #delta = routes.apply_exch() 
 
-            # 1-0 reloc
-            
-            rand_node = random.rand([1, N])
-            
-            # calculate cost difference
-            delta = routes.get_delta()
-
-            if delta < 0:
+            if routes.get_delta_from_best() > 0:
                 routes.update_best()
                 continue
-
-            if acceptance(delta, T.now):
-                #keep solution
-                routes.apply_perturbation()
+            
+            # acceptance probability
+            if np.exp(-(delta/T.now)) > random.rand()
+                routes.commit()
+            else:
+                routes.revert()
             
             if deviation_too_much:
                 routes.reset_to_best()
