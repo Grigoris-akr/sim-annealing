@@ -46,7 +46,7 @@ def sim_anneal(routes, node_dem_l, init_T = 1200, final_T = 1, alpha = 0.9, max_
                 continue
             
             # acceptance probability
-            if np.exp(-(delta/T.now)) > random.rand()
+            if np.exp(-(delta/T.now)) > random.rand():
                 routes.commit()
             else:
                 routes.revert()

@@ -62,19 +62,22 @@ class localSearch:
         # cost check
         if (x_i + i_y + x_y) > (i_z + j_i + i_z):
             print("better route")
-            # delete node i from route_i
-            routes.edges[route_i].pop(i)
-            routes.edges_inc[route_i].pop(i)
-            
-            # reconnect route_i
-            routes.edges[route_i][x] = y
-            routes.edges_inc[route_i][y] = x
-            
-            # add node i to route_j
-            routes.edges[route_j][j] = i
-            routes.edges_inc[route_j][i] = j
-            routes.edges[route_j][i] = z
-            routes.edges_inc[route_j][z] = i
+            # # delete node i from route_i
+            # routes.edges[route_i].pop(i)
+            # routes.edges_inc[route_i].pop(i)
+            # 
+            # # reconnect route_i
+            # routes.edges[route_i][x] = y
+            # routes.edges_inc[route_i][y] = x
+            # 
+            # # add node i to route_j
+            # routes.edges[route_j][j] = i
+            # routes.edges_inc[route_j][i] = j
+            # routes.edges[route_j][i] = z
+            # routes.edges_inc[route_j][z] = i
+
+            routes.remove_node(route = route_i, node = i)
+            routes.add_node(route = route_j, node = i, preceding_node = j)
 
 
         return routes

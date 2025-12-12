@@ -27,9 +27,10 @@ def save_plot_from_edges(edges, coords, filename = "fig"):
     G = nx.DiGraph()
     for route in list(edges.keys()):
         for i, j in edges[route].items():
-            G.add_edge(i, j, edge_color=colors[route % len(colors)])
+            G.add_edge(i, j, color=colors[route % len(colors)])
 
-    nx.draw(G, pos, with_labels=True, node_color='lightblue')#, edge_color=colors[i % len(colors)])
+    edge_colors = nx.get_edge_attributes(G,'color').values()
+    nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color=edge_colors)
 
     plt.savefig(f"{filename}.png")
     G.clear()
@@ -65,78 +66,6 @@ def get_distance_matrix(coords):
     return dm
 
 
-class AbstractRoutes:
-    def __init__(self, distance_matrix):
-        self.N = np.size(distance_matrix, axis=0)
-        self.dist_mat_zero_diag = np.array(distance_matrix)
-        self.dist_mat_zero_diag[np.diag_indices_from(distance_matrix)] = 0 # set diag to zero
-
-        # initiate route objects
-        self.am   = np.zeros([1, self.N, self.N])   # adjacency matrix form
-        self.list = list()                          # list form
-
-        self.edges     = {0: {}} # key -> value
-        self.edges_inc = {0: {}} # key <- value
-
-        self.best_am = self.am.copy()               
-        self.best_l  = self.list.copy()
-
-        self.best_cost = np.zeros(1) # best cost per route
-        self.load = np.zeros(1)      # load per route
-
-    def __len__(self,):
-        return len(self.edges)
-
-    def new_route(self,):
-        self.am = np.append(self.am, np.zeros([1, self.N, self.N]), axis=0)
-        self.best_cost = np.append(self.best_cost, np.zeros(1))
-        self.load = np.append(self.load, np.zeros(1))
-
-        self.edges[len(self.edges)] = {}
-        self.edges_inc[len(self.edges_inc)] = {}
-
-    def get_best_cost(self, route_idx = None):
-        if route_idx is None:
-            return self.best_cost.sum()
-        else:
-            return self.best_cost[route_idx]
-
-    def get_cost(self, route_idx = None):
-        # TODO - fix this shit
-        # if None get cost of all routes
-        #return (self.dist_mat_zero_diag * self.am[route_idx]).sum()
-        #return self.am[route_idx].sum()
-        x = [] 
-        y = []
-        if route_idx is None:
-            #indices = [[i][j] for r in list(self.edges.keys()) for i, j in self.edges[r].items()]
-            for r in list(self.edges.keys()):
-                for i, j in self.edges[r].items():
-                    x.append(i)
-                    y.append(j)
-
-            return self.dist_mat_zero_diag[x,y].sum()
-        else:
-            indices = [[i,j] for i, j in self.edges[route_idx].items()]
-            return self.dist_mat_zero_diag[indices].sum()
-
-
-    def update_list_view(self,):
-        pass
-
-    def get_delta(self, route_idx = None):
-        return self.am[route_idx].sum() - self.get_best_cost(route_idx)
-
-    def reset_to_best(self,):
-        self.am = self.best_am.copy()
-        self.list = self.best_l.copy()
-
-    def update_best(self,):
-        self.update_list_view()
-        self.best_am = self.am.copy()
-        self.best_l  = self.list.copy()
-        self.best_cost = np.einsum('kij -> k', self.am)
-        # self.best_cost = np.einsum('ij, kij -> k', self.dist_map..., self.am)
 
 if __name__ == '__main__':
     data = read_data('prov6.txt')
