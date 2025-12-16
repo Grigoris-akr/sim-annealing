@@ -1,28 +1,13 @@
-#!/home/golis/.venvs/venv1/bin/python3
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
 
-def save_plot_from_adj_mat(adj_mat, coords, filename = "fig"):
-    adj_mat = np.array(adj_mat)
-    pos = np.array(list(coords.values()))
-
-    colors = ['blue', 'red', 'gray', 'green', 'yellow', 'orange']
-
-    for i in range(np.size(adj_mat, axis=0)): 
-        G = nx.from_numpy_array(adj_mat[i,:,:], create_using=nx.DiGraph)
-        nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color=colors[i % len(colors)])
-
-    plt.savefig(f"{filename}.png")
-    G.clear()
-    return None
-
-def save_plot_from_edges(edges, coords, filename = "fig"):
+def plot(edges, coords, filename = "fig"):
     """ from edge dict """
     pos = np.array(list(coords.values()))
 
-    colors = ['blue', 'red', 'gray', 'green', 'yellow', 'orange']
+    colors = ['blue', 'orange', 'red', 'gray', 'green', 'yellow', 'black', 'purple']
     plt.figure()
     G = nx.DiGraph()
     for route in list(edges.keys()):
@@ -64,9 +49,3 @@ def get_distance_matrix(coords):
     dm = np.asarray([[dist(p1, p2) for p2 in coords_arr] for p1 in coords_arr])
     dm[np.diag_indices_from(dm)] = np.inf
     return dm
-
-
-
-if __name__ == '__main__':
-    data = read_data('prov6.txt')
-    print(data)

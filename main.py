@@ -15,9 +15,9 @@ def run(func, *args, **kwargs):
     startTime = time.perf_counter()
     routes = func(*args, **kwargs)
     print(f"{func.__name__} > cost: {routes.get_best_cost():0.2f} time: {(time.perf_counter() - startTime):0.5f} sec")
-    save_plot_from_edges(routes.best, data["node_coords"], filename = f"{func.__name__}_{routes.get_best_cost():0.2f}")
+    plot(routes.best, data["node_coords"], filename = f"plots/{func.__name__}_{routes.get_best_cost():0.2f}")
+    print("Routes:")
     for r in routes.best.keys():
-        #print(routes.best[r].values())
         print(f"route {r+1}: ", end = '')
         for n in list(routes.best[r].keys()):
             print(f"{str(n).ljust(2, ' ')} -> ", end ='')
@@ -31,19 +31,16 @@ if __name__ == '__main__':
     data = read_data(file)
     distance_matrix = get_distance_matrix(data["node_coords"])
 
-    # Create the routes object
+    # Create routes and local search objects
     routes = AbstractRoutes(distance_matrix, data["node_dem"])
     ls = localSearch(distance_matrix, data["node_dem"], data["veh_cap"])
     
     # Nearest Neighbor
     routes = run(near_neigh, routes, distance_matrix, data["node_dem"], data["veh_cap"])
-
-    # simulated annealing
+    
+    # Simulated Annealing
     #routes = run(sim_anneal, routes, ls, temp_upd_method = 'linear', init_T = 50, final_T = 1, alpha = 0.10, max_iter=2000)
     routes = run(sim_anneal, routes, ls, temp_upd_method = 'exponential', init_T = 50, final_T = 1, alpha = 0.0005, max_iter=100)
-
-    #for i in range(len(routes)):
-    #    print(routes.edges[i])
 
     #startTime = time.perf_counter()
     # vns_routes = vns(data, sa_routes.best)
