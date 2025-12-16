@@ -47,6 +47,8 @@ def near_neigh(routes, distance_matrix, node_dem_l, veh_cap):
         routes.edges[route_idx][start_node] = nearest_node
         routes.edges_inc[route_idx][nearest_node] = start_node
 
+        routes.node_route[nearest_node] = int(route_idx)
+
         # remove node from unchecked_nodes list
         unchecked_nodes[nearest_node] = np.nan
 

@@ -40,13 +40,15 @@ def sim_anneal(routes, ls, temp_upd_method, init_T = 1200, final_T = 1, alpha = 
     while T.now > final_T:
         for _ in range(max_iter):
             # choose perturbation
-            if random.random() > -0.1: #0.5: # probability threshold
-                ls_method = 'reloc'
-                route1, node1, route2, node2, delta = ls.reloc_1_0(routes.edges, routes.edges_inc, routes.load) 
+            if random.random() > 0.5: # probability threshold
+                ls_method = 'relocation'
+                #route1, node1, route2, node2, delta = ls.reloc_1_0(routes.edges, routes.edges_inc, routes.load) 
             else:
                 ls_method = 'exchange'
-                route1, node1, route2, node2, delta = ls.exch_1_1(routes.edges, routes.edges_inc, routes.load) 
+                #route1, node1, route2, node2, delta = ls.exch_1_1(routes.edges, routes.edges_inc, routes.load, routes.node_route) 
             
+            route1, node1, route2, node2, delta = ls.apply_local_search(routes.edges, routes.edges_inc, routes.load, node_route = routes.node_route, method = ls_method) 
+
             if route1 is None:
                 continue
 

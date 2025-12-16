@@ -23,6 +23,8 @@ class AbstractRoutes:
         self.best_cost = [] # best cost per route
         self.load = np.zeros(1)      # load per route
 
+        self.node_route = np.zeros(self.N, dtype = int)
+
         # TODO: maybe keep track of edge costs
 
     def __len__(self,):
@@ -104,6 +106,9 @@ class AbstractRoutes:
 
         # adjust load
         self.load[route] += self.node_dem_l[node]
+
+        # adjust node_route
+        self.node_route[node] = int(route)
 
         return None
 
