@@ -1,21 +1,26 @@
 import numpy as np
 
 class AbstractRoutes:
-    def __init__(self, distance_matrix):
+    def __init__(self, distance_matrix, node_dem_l):
         self.N = np.size(distance_matrix, axis=0)
         self.dist_mat_zero_diag = np.array(distance_matrix)
         self.dist_mat_zero_diag[np.diag_indices_from(distance_matrix)] = 0 # set diag to zero
 
+        self.node_dem_l = node_dem_l
         # initiate route objects
         self.am   = np.zeros([1, self.N, self.N])   # adjacency matrix form
 
         self.edges     = {0: {}} # key -> value
         self.edges_inc = {0: {}} # key <- value
 
-        self.best_am = self.am.copy()
-        #self.best_edges  = 
+        self.temp_edges     = {0: {}}
+        self.temp_edges_inc = {0: {}}
 
-        self.best_cost = np.zeros(1) # best cost per route
+        self.best  = {}
+        self.best_inc  = {}
+
+        #self.best_cost = np.zeros(1) # best cost per route
+        self.best_cost = [] # best cost per route
         self.load = np.zeros(1)      # load per route
 
         # TODO: maybe keep track of edge costs
@@ -33,7 +38,7 @@ class AbstractRoutes:
 
     def get_best_cost(self, route_idx = None):
         if route_idx is None:
-            return self.best_cost.sum()
+            return sum(self.best_cost)
         else:
             return self.best_cost[route_idx]
 
@@ -53,45 +58,57 @@ class AbstractRoutes:
 
             return self.dist_mat_zero_diag[x,y].sum()
         else:
-            indices = [[i,j] for i, j in self.edges[route_idx].items()]
-            return self.dist_mat_zero_diag[indices].sum()
-
+            # indices = [[i,j] for i, j in self.edges[route_idx].items()]
+            # return self.dist_mat_zero_diag[indices].sum()
+            s = 0
+            for i, j in self.edges[route_idx].items():
+                s += self.dist_mat_zero_diag[i,j]
+            return s
 
     def get_delta_from_best(self, route_idx = None):
-        return self.am[route_idx].sum() - self.get_best_cost(route_idx)
+        # return self.am[route_idx].sum() - self.get_best_cost(route_idx)
+        return self.get_cost(route_idx) - self.get_best_cost(route_idx)
 
     def reset_to_best(self,):
-        self.am = self.best_am.copy()
-        self.list = self.best_l.copy()
+        #self.am = self.best_am.copy()
+        self.edges = self.best.copy()
+        self.edges_inc = self.best_inc.copy()
 
     def update_best(self,):
-        #self.update_list_view()
-        self.best_am = self.am.copy()
-        #self.best_l  = self.list.copy()
-        self.best_cost = np.einsum('kij -> k', self.am)
-        # self.best_cost = np.einsum('ij, kij -> k', self.dist_map..., self.am)
+        #self.best_am = self.am.copy()
+        #self.best_cost = np.einsum('kij -> k', self.am)
+        self.best = self.edges.copy()
+        self.best_inc = self.edges_inc.copy()
+        self.best_cost = [self.get_cost(route_idx = route) for route in range(len(self.edges))]
 
+    #def commit(self,):
+    #    self.edges.update(self.temp_edges)
+    #    self.edges_inc.update(self.temp_edges_inc)
+    #    self.temp_edges = {}
+    #    self.temp_edges_inc = {}
 
-    def commit(self,):
-        # commit the perturabation
-        pass
-
-    def revert(self,):
-        # revert the perturbation
-        pass
+    def rollback(self,):
+        #self.edges = self.temp_edges.copy()
+        #self.edges_inc = self.temp_edges_inc.copy()
+        self.temp_edges = {}
+        self.temp_edges_inc = {}
     
     def add_node(self, route, node, preceding_node):
-        # preceding_node --> x || preceding_node -> node -> z
+        # preceding_node --> x ==> preceding_node -> node -> z
         node_z = self.edges[route][preceding_node]
 
         self.edges[route][preceding_node] = node
         self.edges_inc[route][node] = preceding_node
         self.edges[route][node] = node_z
         self.edges_inc[route][node_z] = node
+
+        # adjust load
+        self.load[route] += self.node_dem_l[node]
+
         return None
 
     def remove_node(self, route, node):
-        # x -> i -> y || x --> y
+        # x -> node -> y ==> x --> y
 
         x = self.edges_inc[route][node]
         y = self.edges[route][node]
@@ -103,6 +120,9 @@ class AbstractRoutes:
         # reconnect route
         self.edges[route][x] = y
         self.edges_inc[route][y] = x
+
+        # adjust load
+        self.load[route] -= self.node_dem_l[node]
         return None
 
     def exchange_nodes(self, route1, node1, route2, node2):
@@ -113,6 +133,9 @@ class AbstractRoutes:
         self.remove_node(route2, node2)
         self.add_node(route2, node1, preceding_node = preceding_2)
         self.add_node(route1, node2, preceding_node = preceding_1)
+
+        # adjust load if i keep this method
+
         return None
 
     def untangle(self, route, node1, node2):
@@ -133,3 +156,30 @@ class AbstractRoutes:
         self.edges_inc[route][node1] = p2
         self.edges_inc[route][node2] = p1
         return None
+
+    def apply_relocation(self, route1, node1, route2, node2):
+        self.remove_node(route = route1, node = node1)
+        self.add_node(route = route2, node = node1, preceding_node = node2)
+
+    def apply_exchange(self, route1, node1, route2, node2):
+        preceding_1 = self.edges_inc[route1][node1]
+        preceding_2 = self.edges_inc[route2][node2]
+
+        self.remove_node(route1, node1)
+        self.remove_node(route2, node2)
+        self.add_node(route2, node1, preceding_node = preceding_2)
+        self.add_node(route1, node2, preceding_node = preceding_1)
+
+    def commit(self, route1, node1, route2, node2, method = None):
+        if method == 'reloc':
+            self.remove_node(route = route1, node = node1)
+            self.add_node(route = route2, node = node1, preceding_node = node2)
+
+        elif method == 'exchange':
+            preceding_1 = self.edges_inc[route1][node1]
+            preceding_2 = self.edges_inc[route2][node2]
+
+            self.remove_node(route1, node1)
+            self.remove_node(route2, node2)
+            self.add_node(route2, node1, preceding_node = preceding_2)
+            self.add_node(route1, node2, preceding_node = preceding_1)
