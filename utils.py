@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 def plot(edges, coords, filename = "fig"):
-    """ from edge dict """
+    """ plot graph from edge dict """
     pos = np.array(list(coords.values()))
 
     colors = ['blue', 'orange', 'red', 'gray', 'green', 'yellow', 'black', 'purple']

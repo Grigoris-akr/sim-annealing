@@ -1,6 +1,8 @@
 import numpy as np
 
 class AbstractRoutes:
+    """ Routes class implementing basic route functions """
+    
     def __init__(self, distance_matrix, node_dem_l):
         self.N = np.size(distance_matrix, axis=0)
         self.dist_mat = np.array(distance_matrix)
@@ -12,9 +14,9 @@ class AbstractRoutes:
         self.edges_inc = {0: {}} # key node <- value node
         self.cost = np.zeros(1)  # cost per route
 
-        self.best = {}
+        self.best = {}      # edges with best cost
         self.best_inc = {}
-        self.best_cost = []     # best cost per route
+        self.best_cost = [] # best cost per route
 
         self.load = np.zeros(1) # load per route
         self.node_route = np.zeros(self.N, dtype = int) # route id for each node
@@ -185,5 +187,6 @@ class AbstractRoutes:
             self.remove_node(route2, node2)
             self.insert_node(route2, node1, preceding_node = preceding_2)
             self.insert_node(route1, node2, preceding_node = preceding_1)
-
+        else:
+            raise Exception
         return None

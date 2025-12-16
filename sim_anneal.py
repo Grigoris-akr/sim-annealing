@@ -3,6 +3,8 @@ import random
 
 
 class temperature:
+    """ Temperature helper class for Simulated Annealing """
+
     def __init__(self, update_method, init_T, final_T, alpha):
         self.now = init_T
         self.init_T = init_T
@@ -24,6 +26,8 @@ class temperature:
         
 
 def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.01, max_iter=1000):
+    """ Simulated Annealing function """
+
     T = temperature(temp_upd_method, init_T, final_T, alpha)
 
     i = 0
@@ -35,15 +39,20 @@ def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.
                 ls_method = 'relocation'
             else:
                 ls_method = 'exchange'
-            
-            route1, node1, route2, node2, delta = ls.apply_local_search(routes.edges, routes.edges_inc, routes.load, node_route = routes.node_route, method = ls_method) 
 
+            # apply a local search method and get the elements
+            route1, node1, route2, node2, delta = ls.apply_local_search(routes.edges, routes.edges_inc, routes.load, node_route = routes.node_route, method = ls_method) 
+            
+            # if the LS method failed, continue
             if route1 is None:
                 continue
-
+            
+            # Basic SA function
             if delta < 0:
+                # if the cost is better, do the change
                 routes.commit(route1, node1, route2, node2, method = ls_method)
-
+                
+                # Keep the tour if it is the global best
                 if routes.get_delta_from_best() < 0:
                     routes.update_best()
 
@@ -53,10 +62,11 @@ def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.
             
         # check if deviation threshold is violated
         if routes.get_delta_from_best() > 500:
-            di += 1
             routes.reset_to_best()
+            di += 1
 
         i += 1
         T.update(i)
+
     print(f"Iterations: {i*max_iter} -- deviation threshold violated: {di}")
     return routes

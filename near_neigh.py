@@ -4,10 +4,6 @@ import numpy as np
 def near_neigh(routes, distance_matrix, node_dem_l, veh_cap):
     """ 
     Nearest neighbor function 
-    
-    Parameters:
-    routes:     object of type AbstractRoutes
-    etc
     """
     node_dem_l = np.array(node_dem_l)
 
