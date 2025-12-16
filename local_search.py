@@ -116,7 +116,7 @@ class localSearch:
         # delta = new edges - old edges
         delta = (p1_n2 + n2_a1 + p2_n1 + n1_a2) - (p1_n1 + n1_a1 + p2_n2 + n2_a2)
 
-        return route1, int(node1), route2, int(node2), delta # remove int
+        return route1, node1, route2, node2, delta
 
 
     def opt2(self, edges, edges_inc, load):

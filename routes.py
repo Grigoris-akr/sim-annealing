@@ -8,14 +8,14 @@ class AbstractRoutes:
         self.node_dem_l = node_dem_l
 
         # initiate route objects
-        self.edges     = {0: {}} # key -> value
-        self.edges_inc = {0: {}} # key <- value
+        self.edges     = {0: {}} # key node -> value node
+        self.edges_inc = {0: {}} # key node <- value node
 
-        self.best  = {}
-        self.best_inc  = {}
+        self.best = {}
+        self.best_inc = {}
 
-        self.best_cost = [] # best cost per route
-        self.load = np.zeros(1)      # load per route
+        self.best_cost = []     # best cost per route
+        self.load = np.zeros(1) # load per route
 
         self.node_route = np.zeros(self.N, dtype = int)
 
@@ -65,12 +65,20 @@ class AbstractRoutes:
     def reset_to_best(self,):
         self.edges = self.best.copy()
         self.edges_inc = self.best_inc.copy()
+        
+        # reset load and node routes
+        for r in (self.best.keys()):
+            self.load[r] = 0
+            for n in list(self.best[r].keys()):
+                self.load[r] += self.node_dem_l[n]
+                self.node_route[n] = r
+
         return None
 
     def update_best(self,):
         self.best = self.edges.copy()
         self.best_inc = self.edges_inc.copy()
-        self.best_cost = [self.get_cost(route_idx = route) for route in range(len(self.edges))]
+        self.best_cost = [self.get_cost(route_idx = route) for route in self.edges.keys()]
         return None
 
     def rollback(self,):
