@@ -22,7 +22,7 @@ def run(func, *args, **kwargs):
         for n in list(routes.best[r].keys()):
             print(f"{str(n).ljust(2, ' ')} -> ", end ='')
         print("0")
-
+    print("")
     return routes
 
 if __name__ == '__main__':
@@ -40,11 +40,11 @@ if __name__ == '__main__':
     
     # Simulated Annealing
     #routes = run(sim_anneal, routes, ls, temp_upd_method = 'linear', init_T = 50, final_T = 1, alpha = 0.10, max_iter=2000)
-    routes = run(sim_anneal, routes, ls, temp_upd_method = 'exponential', init_T = 50, final_T = 1, alpha = 0.0005, max_iter=100)
+    routes = run(sim_anneal, routes, ls, temp_upd_method = 'exponential', init_T = 50, final_T = 1, alpha = 0.0005, max_iter=10)
 
-    #startTime = time.perf_counter()
-    # vns_routes = vns(data, sa_routes.best)
-    # print(f"cost: {routes.best_cost()} time: {time.perf_counter() - startTime}")
-    # save_plot(sa_routes, data["node_coords"], filename = "nn")
+    sa_routes = copy.deepcopy(routes)
+    
+    # VNS
+    routes = run(vns, routes, ls, max_iter = 1000, ls_iter = 5000)
 
     print('finish')

@@ -62,7 +62,7 @@ def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.
             
         # check if deviation threshold is violated
         if routes.get_delta_from_best() > 500:
-            routes.reset_to_best()
+            routes.rollback()
             di += 1
 
         i += 1

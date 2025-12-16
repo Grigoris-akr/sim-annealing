@@ -1,13 +1,33 @@
 import numpy as np
 
 class AbstractRoutes:
-    """ Routes class implementing basic route functions """
-    
+    """
+    Routes class implementing basic route functions
+
+        self.edges holds info on which node follows the key node (key -> value)
+        self.edges_inc holds info on which node precedes the key (key <- value)
+        self.node_route holds on which route each node belongs to
+
+            Example
+            -------
+            route 0: 0 -> 1 -> 4 -> 6 -> 3 -> 0
+            route 1: 0 -> 2 -> 5 -> 0
+
+            edges = {0: {0:1, 1:4, 4:6, 6:3, 3:0},
+                     1: {0:2, 2:5, 5:0}}
+
+            edges_inc = {0: {0:3, 1:0, 3:6, 4:1, 6:4},
+                         1: {0:5, 2:0, 5:2}}
+
+                          0  1  2  3  4  5  6
+            node_route = [-, 0, 1, 0, 0, 1, 0]
+    """
+  
     def __init__(self, distance_matrix, node_dem_l):
         self.N = np.size(distance_matrix, axis=0)
+        self.node_dem_l = node_dem_l
         self.dist_mat = np.array(distance_matrix)
         self.dist_mat[np.diag_indices_from(distance_matrix)] = 0 # set diag to zero
-        self.node_dem_l = node_dem_l
 
         # initiate route attributes
         self.edges     = {0: {}} # key node -> value node
@@ -66,7 +86,7 @@ class AbstractRoutes:
     def get_delta_from_best(self, route_idx = None):
         return self.get_cost(route_idx) - self.get_best_cost(route_idx)
 
-    def reset_to_best(self,):
+    def rollback(self,):
         self.edges = self.best.copy()
         self.edges_inc = self.best_inc.copy()
 
@@ -89,9 +109,6 @@ class AbstractRoutes:
         #self.best_cost = [self.calc_cost(route_idx = route) for route in self.edges.keys()]
         #self.best_cost = self.cost.copy()
         return None
-
-    def rollback(self,):
-        pass
 
     def add_node(self, route, node, preceding_node):
         # p ==> p -> node
@@ -155,38 +172,50 @@ class AbstractRoutes:
 
         return None
 
-    def untangle(self, route, node1, node2):
-        # 2-opt
-        # --p1  n2--   --p1--n2--
-        #     \/   | =>         |
-        #     /\   | =>         |
-        # --a2  n1--   --p2--n1--
+    def opt2(self, route, node1, node2):
+        # -->p1-.  .-n2---    -->p1--->n2--.
+        #        \/      ^ =>              |
+        #        /\      | =>              v
+        # <-a2<-'  `-> n1-    <--a2<------n1
 
-        # This is wrong, it breaks the chain.
-        # Considering changing between edges and edges_inc
+
         p1 = self.edges_inc[route][node1]
         a2 = self.edges[route][node2]
 
+        #self.remove_node(route1, node1)
+        #self.remove_node(route2, node2)
+        
+        # p1 -> n2
         self.edges[route][p1] = node2
-        self.edges[route][p2] = node1
-       
-        self.edges_inc[route][node1] = p2
-        self.edges_inc[route][node2] = p1
+        self.edges_inc[route][n2] = p1
+        
+        # reversing order from n2 to a2
+        cc = 0
+        p = n2.copy()
+        n = self.edges_inc[n2]
+        while n != a2:
+            self.edges_inc[n] = p 
+            self.edges[p] = n
+            cc += 1
+            if cc == 20:
+                print('I fucked up')
+            n = self.edges[p]
+
         return None
 
     def commit(self, route1, node1, route2, node2, method = None):
-        if method == 'reloc':
+        if method == 'relocation':
             self.remove_node(route = route1, node = node1)
             self.insert_node(route = route2, node = node1, preceding_node = node2)
 
         elif method == 'exchange':
             preceding_1 = self.edges_inc[route1][node1]
             preceding_2 = self.edges_inc[route2][node2]
-
+            
             self.remove_node(route1, node1)
             self.remove_node(route2, node2)
-            self.insert_node(route2, node1, preceding_node = preceding_2)
             self.insert_node(route1, node2, preceding_node = preceding_1)
+            self.insert_node(route2, node1, preceding_node = preceding_2)
         else:
             raise Exception
         return None
