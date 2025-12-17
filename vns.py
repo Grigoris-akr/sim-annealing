@@ -8,8 +8,11 @@ def vns(routes, ls, max_iter = 100, ls_iter = 1000):
 
     for i in range(max_iter):
         # choose perturbation
-        if random.random() > 0.80:
+        rand = random.random()
+        if rand > 0.8:
             ls_method = 'relocation'
+        elif rand > 0.5:
+            ls_method = '2opt'
         else:
             ls_method = 'exchange'
     

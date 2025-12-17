@@ -179,8 +179,12 @@ class AbstractRoutes:
         #          /\       | =>              v
         # <--a2<--'  `--> n1-    <--a2<------n1
         
-        if self.edges[route][node1] == node2 or self.edges[route][node2] == node1:
-            return None
+        # TODO - fix me
+        if self.edges[route][node2] == node1:
+            print("reversing")
+            tmp = node1
+            node1 = node2
+            node2 = tmp
         
         # preceding and succeeding nodes
         p1 = self.edges_inc[route][node1]
@@ -211,7 +215,7 @@ class AbstractRoutes:
             
             # just to be sure for now 
             cc += 1
-            if cc == 20:
+            if cc > 20:
                 raise Exception("I fucked up")
         return None
 
@@ -228,8 +232,12 @@ class AbstractRoutes:
             self.remove_node(route2, node2)
             self.insert_node(route1, node2, preceding_node = preceding_1)
             self.insert_node(route2, node1, preceding_node = preceding_2)
+        elif method == '2opt':
+            self.opt2(route1, node1, node2)
+
         else:
             raise Exception
+
         return None
 
     def print(self, route = None, print_best = True):
@@ -246,8 +254,13 @@ class AbstractRoutes:
         print("Routes:")
         for r in routes_to_print:
             print(f"route {r+1}: ", end = '')
-            for n in routes[r].keys():
+            print(f"{"0".ljust(2, ' ')} -> ", end ='')
+            n = routes[r][0]
+            while n != 0:
                 print(f"{str(n).ljust(2, ' ')} -> ", end ='')
+                n = routes[r][n]
+            #for n in routes[r].keys():
+            #    print(f"{str(n).ljust(2, ' ')} -> ", end ='')
             print("0")
         print("")
 

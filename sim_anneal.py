@@ -35,8 +35,11 @@ def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.
     while T.now > final_T:
         for _ in range(max_iter):
             # choose perturbation
-            if random.random() > 0.80: 
+            rand = random.random()
+            if rand > 0.8: 
                 ls_method = 'relocation'
+            elif rand > 0.5:
+                ls_method = '2opt'
             else:
                 ls_method = 'exchange'
 

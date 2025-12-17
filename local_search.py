@@ -14,7 +14,7 @@ class localSearch:
         elif method == 'exchange':
             return self.exch_1_1(edges, edges_inc, load, node_route)
         elif method == '2opt':
-            return self.opt2(edges, edges_inc, load)
+            return self.opt2(edges, edges_inc)
         else:
             raise Exception()
          
@@ -119,6 +119,44 @@ class localSearch:
         return route1, node1, route2, node2, delta
 
 
-    def opt2(self, edges, edges_inc, load):
-        raise NotImplementedError
+    def opt2(self, edges, edges_inc):
+        # -->p1-->.  .<-n2--<--p2<---    -->p1 ------> n2 --> p2-->-
+        #          \/               ^ =>                           |
+        #          /\               | =>                           V
+        # <--a2<--'  `--> n1-->a1---^    <--a2 <-------- n1 <-a1 <--
 
+        # get random route
+        route = random.randint(0, len(edges)-1)
+        
+        # node list
+        node_list = list(edges[route].keys())
+
+        # get random node1
+        node1 = random.choice(node_list)
+        
+        # remove node1, its preceding and succeeding nodes
+        node_list.remove(node1)
+        node_list.remove(edges[route][node1])
+        node_list.remove(edges_inc[route][node1])
+        
+        if node_list == []:
+            return None, None, None, None
+
+        # get random node2
+        node2 = random.choice(node_list)
+        
+        # preceding/succeeding nodes
+        p1 = edges_inc[route][node1]
+        a2 = edges[route][node2]
+        
+        # edge costs
+        # old
+        p1_n1 = self.dist_mat[p1, node1]
+        n2_a2 = self.dist_mat[node2, a2]
+        # new
+        p1_n2 = self.dist_mat[p1, node2]
+        n1_a2 = self.dist_mat[node1, a2]
+
+        delta = (p1_n2 + n1_a2) - (p1_n1 + n2_a2)
+
+        return route, node1, None, node2, delta
