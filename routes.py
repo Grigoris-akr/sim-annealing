@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 class AbstractRoutes:
     """
@@ -87,8 +88,8 @@ class AbstractRoutes:
         return self.get_cost(route_idx) - self.get_best_cost(route_idx)
 
     def rollback(self,):
-        self.edges = self.best.copy()
-        self.edges_inc = self.best_inc.copy()
+        self.edges = copy.deepcopy(self.best)
+        self.edges_inc = copy.deepcopy(self.best_inc)
 
         # reset cost
         self.cost = self.best_cost.copy()
@@ -103,8 +104,8 @@ class AbstractRoutes:
         return None
 
     def update_best(self,):
-        self.best = self.edges.copy()
-        self.best_inc = self.edges_inc.copy()
+        self.best = copy.deepcopy(self.edges)
+        self.best_inc = copy.deepcopy(self.edges_inc)
         self.best_cost = [self.get_cost(route_idx = route) for route in self.edges.keys()]
         #self.best_cost = [self.calc_cost(route_idx = route) for route in self.edges.keys()]
         #self.best_cost = self.cost.copy()
@@ -173,34 +174,45 @@ class AbstractRoutes:
         return None
 
     def opt2(self, route, node1, node2):
-        # -->p1-.  .-n2---    -->p1--->n2--.
-        #        \/      ^ =>              |
-        #        /\      | =>              v
-        # <-a2<-'  `-> n1-    <--a2<------n1
-
-
+        # -->p1-->.  .<-n2---    -->p1--->n2--.
+        #          \/       ^ =>              |
+        #          /\       | =>              v
+        # <--a2<--'  `--> n1-    <--a2<------n1
+        
+        if self.edges[route][node1] == node2 or self.edges[route][node2] == node1:
+            return None
+        
+        # preceding and succeeding nodes
         p1 = self.edges_inc[route][node1]
         a2 = self.edges[route][node2]
 
-        #self.remove_node(route1, node1)
-        #self.remove_node(route2, node2)
-        
         # p1 -> n2
         self.edges[route][p1] = node2
-        self.edges_inc[route][n2] = p1
+        self.edges[route][node2] = self.edges_inc[route][node2]
+        self.edges_inc[route][node2] = p1
         
-        # reversing order from n2 to a2
+        # n1 -> a2
+        self.edges_inc[route][node1] = self.edges[route][node1]
+        self.edges[route][node1] = a2
+        self.edges_inc[route][a2] = node1
+        
+        # reversing order from node2 to node1
         cc = 0
-        p = n2.copy()
-        n = self.edges_inc[n2]
-        while n != a2:
-            self.edges_inc[n] = p 
-            self.edges[p] = n
+        p = node2
+        n = self.edges[route][node2]
+        while n != node1:
+            # reverse edge order
+            self.edges[route][n] = self.edges_inc[route][n]
+            self.edges_inc[route][n] = p 
+            
+            # next node
+            p = n
+            n = self.edges[route][p]
+            
+            # just to be sure for now 
             cc += 1
             if cc == 20:
-                print('I fucked up')
-            n = self.edges[p]
-
+                raise Exception("I fucked up")
         return None
 
     def commit(self, route1, node1, route2, node2, method = None):
@@ -218,4 +230,25 @@ class AbstractRoutes:
             self.insert_node(route2, node1, preceding_node = preceding_2)
         else:
             raise Exception
+        return None
+
+    def print(self, route = None, print_best = True):
+        if print_best:
+            routes = self.best.copy()
+        else:
+            routes = self.edges.copy()
+        
+        if route is None:
+            routes_to_print = routes.keys()
+        else:
+            routes_to_print = [route]
+
+        print("Routes:")
+        for r in routes_to_print:
+            print(f"route {r+1}: ", end = '')
+            for n in routes[r].keys():
+                print(f"{str(n).ljust(2, ' ')} -> ", end ='')
+            print("0")
+        print("")
+
         return None

@@ -16,13 +16,7 @@ def run(func, *args, **kwargs):
     routes = func(*args, **kwargs)
     print(f"{func.__name__} > cost: {routes.get_best_cost():0.2f} time: {(time.perf_counter() - startTime):0.5f} sec")
     plot(routes.best, data["node_coords"], filename = f"plots/{func.__name__}_{routes.get_best_cost():0.2f}")
-    print("Routes:")
-    for r in routes.best.keys():
-        print(f"route {r+1}: ", end = '')
-        for n in list(routes.best[r].keys()):
-            print(f"{str(n).ljust(2, ' ')} -> ", end ='')
-        print("0")
-    print("")
+    routes.print(print_best = True)
     return routes
 
 if __name__ == '__main__':
@@ -38,13 +32,13 @@ if __name__ == '__main__':
     # Nearest Neighbor
     routes = run(near_neigh, routes, distance_matrix, data["node_dem"], data["veh_cap"])
     
-    # Simulated Annealing
-    #routes = run(sim_anneal, routes, ls, temp_upd_method = 'linear', init_T = 50, final_T = 1, alpha = 0.10, max_iter=2000)
-    routes = run(sim_anneal, routes, ls, temp_upd_method = 'exponential', init_T = 50, final_T = 1, alpha = 0.0005, max_iter=10)
+    ## Simulated Annealing
+    ##routes = run(sim_anneal, routes, ls, temp_upd_method = 'linear', init_T = 50, final_T = 1, alpha = 0.10, max_iter=2000)
+    #routes = run(sim_anneal, routes, ls, temp_upd_method = 'exponential', init_T = 50, final_T = 1, alpha = 0.0005, max_iter=10)
 
-    sa_routes = copy.deepcopy(routes)
-    
-    # VNS
-    routes = run(vns, routes, ls, max_iter = 1000, ls_iter = 5000)
+    #sa_routes = copy.deepcopy(routes)
+    #
+    ## VNS
+    #routes = run(vns, routes, ls, max_iter = 1000, ls_iter = 5000)
 
     print('finish')
