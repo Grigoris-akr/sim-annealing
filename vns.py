@@ -5,6 +5,7 @@ import random
 
 def vns(routes, ls, max_iter = 100, ls_iter = 1000):
     """ Variable Neighborhood Search """ 
+    print("Variable Neighborhood Search")
 
     for i in range(max_iter):
         # choose perturbation

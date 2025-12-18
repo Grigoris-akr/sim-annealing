@@ -18,7 +18,6 @@ def plot(edges, coords, filename = "fig"):
     nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color=edge_colors)
 
     plt.savefig(f"{filename}.png")
-    G.clear()
     plt.close()
     return None
 
@@ -27,7 +26,7 @@ def read_data(filename):
     raw_data = []
     with open(filename, 'r') as f:
         for line in f:
-            raw_data.append(line.split())#.split(' '))
+            raw_data.append(line.split())
     data = {}
 
     data["N"]           = int(raw_data[0][0])

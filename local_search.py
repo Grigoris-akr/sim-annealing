@@ -126,10 +126,10 @@ class localSearch:
 
 
     def opt2(self, edges, edges_inv):
-        # -->p1-->.  .<-n2--<--p2<---    -->p1 ------> n2 --> p2-->-
+        # -->p1-->.  .<-n2--<--p2<---    -->p1-------->n2---->p2-->-
         #          \/               ^ =>                           |
         #          /\               | =>                           V
-        # <--a2<--'  `--> n1-->a1---^    <--a2 <-------- n1 <-a1 <--
+        # <--a2<--'  `--->n1-->a1---^    <--a2<----------n1<--a1<---
 
         # get random route
         route = random.randint(0, len(edges)-1)
@@ -137,13 +137,14 @@ class localSearch:
         # node list
         node_list = list(edges[route].keys())
 
+        # remove depot
+        node_list.remove(0)
+
         # get random node1
         node1 = random.choice(node_list)
         
         # remove node1, its preceding and succeeding nodes
         node_list.remove(node1)
-        node_list.remove(edges[route][node1])
-        node_list.remove(edges_inv[route][node1])
         
         if node_list == []:
             return None, None, None, None

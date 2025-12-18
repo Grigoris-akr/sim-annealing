@@ -5,6 +5,8 @@ def near_neigh(routes, distance_matrix, node_dem_l, veh_cap):
     """ 
     Nearest neighbor function 
     """
+    print("Nearest Neighbor")
+
     node_dem_l = np.array(node_dem_l)
 
     N = np.size(distance_matrix, 0)

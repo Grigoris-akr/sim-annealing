@@ -27,6 +27,7 @@ class temperature:
 
 def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.01, max_iter=1000):
     """ Simulated Annealing function """
+    print("Simulated Annealing")
 
     T = temperature(temp_upd_method, init_T, final_T, alpha)
 

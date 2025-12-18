@@ -174,14 +174,13 @@ class AbstractRoutes:
         return None
 
     def opt2(self, route, node1, node2):
-        # -->p1-->.  .<-n2---    -->p1--->n2--.
-        #          \/       ^ =>              |
-        #          /\       | =>              v
-        # <--a2<--'  `--> n1-    <--a2<------n1
+        # -->p1-->.  .<-n2--<--p2<---    -->p1-------->n2---->p2-->-
+        #          \/               ^ =>                           |
+        #          /\               | =>                           V
+        # <--a2<--'  `--->n1-->a1---^    <--a2<----------n1<--a1<---
         
-        # TODO - fix me
+        # hack to get it work
         if self.edges[route][node2] == node1:
-            print("reversing")
             tmp = node1
             node1 = node2
             node2 = tmp
@@ -200,8 +199,7 @@ class AbstractRoutes:
         self.edges[route][node1] = a2
         self.edges_inv[route][a2] = node1
         
-        # reversing order from node2 to node1
-        cc = 0
+        # reverse order from node2 to node1
         p = node2
         n = self.edges[route][node2]
         while n != node1:
@@ -209,14 +207,10 @@ class AbstractRoutes:
             self.edges[route][n] = self.edges_inv[route][n]
             self.edges_inv[route][n] = p 
             
-            # next node
+            # next node pair
             p = n
             n = self.edges[route][p]
             
-            # just to be sure for now 
-            cc += 1
-            if cc > 20:
-                raise Exception("I fucked up")
         return None
 
     def commit(self, route1, node1, route2, node2, method = None):
@@ -232,6 +226,7 @@ class AbstractRoutes:
             self.remove_node(route2, node2)
             self.insert_node(route1, node2, preceding_node = preceding_1)
             self.insert_node(route2, node1, preceding_node = preceding_2)
+
         elif method == '2opt':
             self.opt2(route1, node1, node2)
 
@@ -259,8 +254,6 @@ class AbstractRoutes:
             while n != 0:
                 print(f"{str(n).ljust(2, ' ')} -> ", end ='')
                 n = routes[r][n]
-            #for n in routes[r].keys():
-            #    print(f"{str(n).ljust(2, ' ')} -> ", end ='')
             print("0")
         print("")
 

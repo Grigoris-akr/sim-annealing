@@ -1,6 +1,7 @@
 #!/home/golis/.venvs/venv1/bin/python3
 import time
 import copy
+import random
 from routes import *
 from near_neigh import *
 from sim_anneal import *
@@ -20,6 +21,9 @@ def run(func, *args, **kwargs):
     return routes
 
 if __name__ == '__main__':
+    # set rng seed
+    random.seed(1000)
+
     # Data reading and formatting
     file = 'prov6.txt'
     data = read_data(file)
@@ -39,6 +43,6 @@ if __name__ == '__main__':
     #sa_routes = copy.deepcopy(routes)
     
     # VNS
-    routes = run(vns, routes, ls, max_iter = 1000, ls_iter = 5000)
+    routes = run(vns, routes, ls, max_iter = 1000, ls_iter = 2000)
 
     print('finish')
