@@ -8,34 +8,37 @@ class localSearch:
         self.node_num = self.dist_mat.shape[0] 
         self.veh_cap = veh_cap
 
-    def apply_local_search(self, edges, edges_inc, load, node_route = None, method = ''):
+    def apply_local_search(self, edges, edges_inv, load, node_route = None, method = ''):
         if method == 'relocation':
-            return self.reloc_1_0(edges, edges_inc, load)
+            return self.reloc_1_0(edges, edges_inv, load)
         elif method == 'exchange':
-            return self.exch_1_1(edges, edges_inc, load, node_route)
+            return self.exch_1_1(edges, edges_inv, load, node_route)
         elif method == '2opt':
-            return self.opt2(edges, edges_inc)
+            return self.opt2(edges, edges_inv)
         else:
             raise Exception()
          
-    def reloc_1_0(self, edges, edges_inc, load):
+    def reloc_1_0(self, edges, edges_inv, load):
         # route1: p1 -> n1 -> a1 | p1 -------> a1 
         # route2: n2 -------> a2 | n2 -> n1 -> a2
 
         # get random route
         route1 = random.randint(0, len(edges)-1)
+
+        # node list
+        node_list = list(edges[route1].keys())
+
+        # remove depot
+        node_list.remove(0)
+
         # get random node
-        node1 = random.choice(list(edges[route1].keys())) 
+        node1 = random.choice(node_list) 
 
-        # fix this as well
-        while node1 == 0:
-            node1 = random.choice(list(edges[route1].keys())) 
-
-        # skip origin route # TODO - fix this
+        # skip origin route
         routes_loads = load.copy()
         routes_loads[route1] = 1000
 
-        eligible_routes = np.argwhere(routes_loads + self.node_dem[node1] <= self.veh_cap).T[0] # maybe no zero
+        eligible_routes = np.argwhere(routes_loads + self.node_dem[node1] <= self.veh_cap).T[0]
         
         if eligible_routes.size == 0:
             return None, None, None, None, None
@@ -45,7 +48,7 @@ class localSearch:
         node2  = random.choice(list(edges[route2].keys()))
         
         # nodes
-        p1 = edges_inc[route1][node1]
+        p1 = edges_inv[route1][node1]
         a1 = edges[route1][node1]
         a2 = edges[route2][node2]
         
@@ -63,20 +66,23 @@ class localSearch:
 
         return route1, node1, route2, node2, delta
 
-    def exch_1_1(self, edges, edges_inc, load, node_route):
+    def exch_1_1(self, edges, edges_inv, load, node_route):
         # route1: p1 -> n1 -> a1 | p1 -> n2 -> a1 
         # route2: p2 -> n2 -> a2 | p2 -> n1 -> a2 
-        
+
         # get random route
         route1 = random.randint(0, len(edges)-1)
-        # get random node
-        node1 = random.choice(list(edges[route1].keys()))
 
-        # fix this as well
-        while node1 == 0:
-            node1 = random.choice(list(edges[route1].keys()))
+        # node list
+        node_list = list(edges[route1].keys())
         
-        # remove route1 from the search # TODO fix it
+        # remove depot
+        node_list.remove(0)
+
+        # get random node
+        node1 = random.choice(node_list)
+        
+        # remove route1 from the search
         load_cpy = load.copy()
         load_cpy[route1] = 10000
 
@@ -87,7 +93,7 @@ class localSearch:
         node_route_load[0] = 10000
 
         # route load per node - node demand + node1 demand
-        eligible_nodes = np.argwhere(node_route_load - self.node_dem + self.node_dem[node1] <= self.veh_cap).T[0] # maybe no zero
+        eligible_nodes = np.argwhere(node_route_load - self.node_dem + self.node_dem[node1] <= self.veh_cap).T[0]
 
         if eligible_nodes.size == 0:
             return None, None, None, None, None
@@ -97,9 +103,9 @@ class localSearch:
         route2 = node_route[node2]
 
         # nodes
-        p1 = edges_inc[route1][node1]
+        p1 = edges_inv[route1][node1]
         a1 = edges[route1][node1]
-        p2 = edges_inc[route2][node2]
+        p2 = edges_inv[route2][node2]
         a2 = edges[route2][node2]
 
         # edge distances
@@ -119,7 +125,7 @@ class localSearch:
         return route1, node1, route2, node2, delta
 
 
-    def opt2(self, edges, edges_inc):
+    def opt2(self, edges, edges_inv):
         # -->p1-->.  .<-n2--<--p2<---    -->p1 ------> n2 --> p2-->-
         #          \/               ^ =>                           |
         #          /\               | =>                           V
@@ -137,7 +143,7 @@ class localSearch:
         # remove node1, its preceding and succeeding nodes
         node_list.remove(node1)
         node_list.remove(edges[route][node1])
-        node_list.remove(edges_inc[route][node1])
+        node_list.remove(edges_inv[route][node1])
         
         if node_list == []:
             return None, None, None, None
@@ -146,7 +152,7 @@ class localSearch:
         node2 = random.choice(node_list)
         
         # preceding/succeeding nodes
-        p1 = edges_inc[route][node1]
+        p1 = edges_inv[route][node1]
         a2 = edges[route][node2]
         
         # edge costs

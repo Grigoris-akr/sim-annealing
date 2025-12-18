@@ -17,7 +17,7 @@ def vns(routes, ls, max_iter = 100, ls_iter = 1000):
             ls_method = 'exchange'
     
         # apply a local search method and get the attributes
-        route1, node1, route2, node2, delta = ls.apply_local_search(routes.edges, routes.edges_inc, routes.load, node_route = routes.node_route, method = ls_method)
+        route1, node1, route2, node2, delta = ls.apply_local_search(routes.edges, routes.edges_inv, routes.load, node_route = routes.node_route, method = ls_method)
     
         # if the LS method failed, continue
         if route1 is None:
@@ -28,7 +28,7 @@ def vns(routes, ls, max_iter = 100, ls_iter = 1000):
     
         # apply local search algorithms and only keep better solutions
         for _ in range(ls_iter):
-            route1, node1, route2, node2, delta = ls.apply_local_search(routes.edges, routes.edges_inc, routes.load, node_route = routes.node_route, method = ls_method)
+            route1, node1, route2, node2, delta = ls.apply_local_search(routes.edges, routes.edges_inv, routes.load, node_route = routes.node_route, method = ls_method)
     
             # if the LS method failed, continue
             if route1 is None:

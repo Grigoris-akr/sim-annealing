@@ -44,7 +44,7 @@ def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.
                 ls_method = 'exchange'
 
             # apply a local search method and get the elements
-            route1, node1, route2, node2, delta = ls.apply_local_search(routes.edges, routes.edges_inc, routes.load, node_route = routes.node_route, method = ls_method) 
+            route1, node1, route2, node2, delta = ls.apply_local_search(routes.edges, routes.edges_inv, routes.load, node_route = routes.node_route, method = ls_method) 
             
             # if the LS method failed, continue
             if route1 is None:

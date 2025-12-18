@@ -6,7 +6,7 @@ class AbstractRoutes:
     Routes class implementing basic route functions
 
         self.edges holds info on which node follows the key node (key -> value)
-        self.edges_inc holds info on which node precedes the key (key <- value)
+        self.edges_inv holds info on which node precedes the key (key <- value)
         self.node_route holds on which route each node belongs to
 
             Example
@@ -17,7 +17,7 @@ class AbstractRoutes:
             edges = {0: {0:1, 1:4, 4:6, 6:3, 3:0},
                      1: {0:2, 2:5, 5:0}}
 
-            edges_inc = {0: {0:3, 1:0, 3:6, 4:1, 6:4},
+            edges_inv = {0: {0:3, 1:0, 3:6, 4:1, 6:4},
                          1: {0:5, 2:0, 5:2}}
 
                           0  1  2  3  4  5  6
@@ -32,7 +32,7 @@ class AbstractRoutes:
 
         # initiate route attributes
         self.edges     = {0: {}} # key node -> value node
-        self.edges_inc = {0: {}} # key node <- value node
+        self.edges_inv = {0: {}} # key node <- value node
         self.cost = np.zeros(1)  # cost per route
 
         self.best = {}      # edges with best cost
@@ -51,7 +51,7 @@ class AbstractRoutes:
         self.best_cost = np.append(self.best_cost, np.zeros(1))
 
         self.edges[len(self.edges)] = {}
-        self.edges_inc[len(self.edges_inc)] = {}
+        self.edges_inv[len(self.edges_inv)] = {}
         return None
 
     def get_best_cost(self, route_idx = None):
@@ -89,7 +89,7 @@ class AbstractRoutes:
 
     def rollback(self,):
         self.edges = copy.deepcopy(self.best)
-        self.edges_inc = copy.deepcopy(self.best_inc)
+        self.edges_inv = copy.deepcopy(self.best_inc)
 
         # reset cost
         self.cost = self.best_cost.copy()
@@ -105,7 +105,7 @@ class AbstractRoutes:
 
     def update_best(self,):
         self.best = copy.deepcopy(self.edges)
-        self.best_inc = copy.deepcopy(self.edges_inc)
+        self.best_inc = copy.deepcopy(self.edges_inv)
         self.best_cost = [self.get_cost(route_idx = route) for route in self.edges.keys()]
         #self.best_cost = [self.calc_cost(route_idx = route) for route in self.edges.keys()]
         #self.best_cost = self.cost.copy()
@@ -115,7 +115,7 @@ class AbstractRoutes:
         # p ==> p -> node
 
         self.edges[route][preceding_node] = node
-        self.edges_inc[route][node] = preceding_node
+        self.edges_inv[route][node] = preceding_node
 
         # adjust load
         self.load[route] += self.node_dem_l[node]
@@ -132,9 +132,9 @@ class AbstractRoutes:
         a = self.edges[route][preceding_node]
 
         self.edges[route][preceding_node] = node
-        self.edges_inc[route][node] = preceding_node
+        self.edges_inv[route][node] = preceding_node
         self.edges[route][node] = a
-        self.edges_inc[route][a] = node
+        self.edges_inv[route][a] = node
 
         # adjust load
         self.load[route] += self.node_dem_l[node]
@@ -152,16 +152,16 @@ class AbstractRoutes:
     def remove_node(self, route, node):
         # p -> node -> a ==> p --> a
 
-        p = self.edges_inc[route][node]
+        p = self.edges_inv[route][node]
         a = self.edges[route][node]
         
         # remove node
         self.edges[route].pop(node)
-        self.edges_inc[route].pop(node)
+        self.edges_inv[route].pop(node)
 
         # reconnect route
         self.edges[route][p] = a
-        self.edges_inc[route][a] = p
+        self.edges_inv[route][a] = p
 
         # adjust load
         self.load[route] -= self.node_dem_l[node]
@@ -187,18 +187,18 @@ class AbstractRoutes:
             node2 = tmp
         
         # preceding and succeeding nodes
-        p1 = self.edges_inc[route][node1]
+        p1 = self.edges_inv[route][node1]
         a2 = self.edges[route][node2]
 
         # p1 -> n2
         self.edges[route][p1] = node2
-        self.edges[route][node2] = self.edges_inc[route][node2]
-        self.edges_inc[route][node2] = p1
+        self.edges[route][node2] = self.edges_inv[route][node2]
+        self.edges_inv[route][node2] = p1
         
         # n1 -> a2
-        self.edges_inc[route][node1] = self.edges[route][node1]
+        self.edges_inv[route][node1] = self.edges[route][node1]
         self.edges[route][node1] = a2
-        self.edges_inc[route][a2] = node1
+        self.edges_inv[route][a2] = node1
         
         # reversing order from node2 to node1
         cc = 0
@@ -206,8 +206,8 @@ class AbstractRoutes:
         n = self.edges[route][node2]
         while n != node1:
             # reverse edge order
-            self.edges[route][n] = self.edges_inc[route][n]
-            self.edges_inc[route][n] = p 
+            self.edges[route][n] = self.edges_inv[route][n]
+            self.edges_inv[route][n] = p 
             
             # next node
             p = n
@@ -225,8 +225,8 @@ class AbstractRoutes:
             self.insert_node(route = route2, node = node1, preceding_node = node2)
 
         elif method == 'exchange':
-            preceding_1 = self.edges_inc[route1][node1]
-            preceding_2 = self.edges_inc[route2][node2]
+            preceding_1 = self.edges_inv[route1][node1]
+            preceding_2 = self.edges_inv[route2][node2]
             
             self.remove_node(route1, node1)
             self.remove_node(route2, node2)
