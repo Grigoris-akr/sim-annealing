@@ -37,7 +37,7 @@ class AbstractRoutes:
 
         self.best = {}      # edges with best cost
         self.best_inc = {}
-        self.best_cost = [] # best cost per route
+        self.best_cost = np.zeros(1) # best cost per route
 
         self.load = np.zeros(1) # load per route
         self.node_route = np.zeros(self.N, dtype = int) # route id for each node
@@ -60,14 +60,13 @@ class AbstractRoutes:
         else:
             return self.best_cost[route_idx]
 
-    # def get_cost(self, route_idx = None):
-    #     if route_idx is None:
-    #         return np.sum(self.cost)
-    #     else:
-    #         return self.cost[route_idx]
-
-    #def calc_cost(self, route_idx = None):
     def get_cost(self, route_idx = None):
+        if route_idx is None:
+            return np.sum(self.cost)
+        else:
+            return self.cost[route_idx]
+
+    def calc_cost(self, route_idx = None):
         # Calculate cost of a route. If None for all routes
         if route_idx is None:
             x = []
@@ -88,11 +87,12 @@ class AbstractRoutes:
         return self.get_cost(route_idx) - self.get_best_cost(route_idx)
 
     def rollback(self,):
+        "reset routes to best"
         self.edges = copy.deepcopy(self.best)
         self.edges_inv = copy.deepcopy(self.best_inc)
 
         # reset cost
-        self.cost = self.best_cost.copy()
+        self.cost = copy.deepcopy(self.best_cost)
         
         # reset load and node routes
         for r in (self.best.keys()):
@@ -106,9 +106,8 @@ class AbstractRoutes:
     def update_best(self,):
         self.best = copy.deepcopy(self.edges)
         self.best_inc = copy.deepcopy(self.edges_inv)
-        self.best_cost = [self.get_cost(route_idx = route) for route in self.edges.keys()]
+        self.best_cost = copy.deepcopy(self.cost)
         #self.best_cost = [self.calc_cost(route_idx = route) for route in self.edges.keys()]
-        #self.best_cost = self.cost.copy()
         return None
 
     def add_node(self, route, node, preceding_node):
@@ -123,14 +122,18 @@ class AbstractRoutes:
         # adjust node_route
         self.node_route[node] = route
 
+        # adjust cost
+        self.cost[route] += self.dist_mat[preceding_node, node]
+
         return None
 
-    def insert_node(self, route, node, preceding_node):
+    def _insert_node(self, route, node, preceding_node):
         # p --> a ==> p -> node -> a
         
         #p = preceding_node
         a = self.edges[route][preceding_node]
-
+        
+        # edges
         self.edges[route][preceding_node] = node
         self.edges_inv[route][node] = preceding_node
         self.edges[route][node] = a
@@ -142,14 +145,14 @@ class AbstractRoutes:
         # adjust node_route
         self.node_route[node] = route
 
-        # # adjust cost
-        # self.cost[route] -= self.dist_mat[preceding_node, a]
-        # self.cost[route] += self.dist_mat[preceding_node, node]
-        # self.cost[route] += self.dist_mat[node, a]
+        # adjust cost
+        self.cost[route] -= self.dist_mat[preceding_node, a]
+        self.cost[route] += self.dist_mat[preceding_node, node]
+        self.cost[route] += self.dist_mat[node, a]
 
         return None
 
-    def remove_node(self, route, node):
+    def _remove_node(self, route, node):
         # p -> node -> a ==> p --> a
 
         p = self.edges_inv[route][node]
@@ -166,14 +169,14 @@ class AbstractRoutes:
         # adjust load
         self.load[route] -= self.node_dem_l[node]
 
-        # # adjust cost
-        # self.cost[route] -= self.dist_mat[p, node]
-        # self.cost[route] -= self.dist_mat[node, a]
-        # self.cost[route] += self.dist_mat[p, a]
+        # adjust cost
+        self.cost[route] -= self.dist_mat[p, node]
+        self.cost[route] -= self.dist_mat[node, a]
+        self.cost[route] += self.dist_mat[p, a]
 
         return None
 
-    def opt2(self, route, node1, node2):
+    def _opt2(self, route, node1, node2):
         # -->p1-->.  .<-n2--<--p2<---    -->p1-------->n2---->p2-->-
         #          \/               ^ =>                           |
         #          /\               | =>                           V
@@ -210,25 +213,31 @@ class AbstractRoutes:
             # next node pair
             p = n
             n = self.edges[route][p]
+
+        # adjust cost
+        self.cost[route] -= self.dist_mat[p1, node1]
+        self.cost[route] -= self.dist_mat[node2, a2]
+        self.cost[route] += self.dist_mat[p1, node2]
+        self.cost[route] += self.dist_mat[node1, a2]
             
         return None
 
     def commit(self, route1, node1, route2, node2, method = None):
         if method == 'relocation':
-            self.remove_node(route = route1, node = node1)
-            self.insert_node(route = route2, node = node1, preceding_node = node2)
+            self._remove_node(route = route1, node = node1)
+            self._insert_node(route = route2, node = node1, preceding_node = node2)
 
         elif method == 'exchange':
             preceding_1 = self.edges_inv[route1][node1]
             preceding_2 = self.edges_inv[route2][node2]
             
-            self.remove_node(route1, node1)
-            self.remove_node(route2, node2)
-            self.insert_node(route1, node2, preceding_node = preceding_1)
-            self.insert_node(route2, node1, preceding_node = preceding_2)
+            self._remove_node(route1, node1)
+            self._remove_node(route2, node2)
+            self._insert_node(route1, node2, preceding_node = preceding_1)
+            self._insert_node(route2, node1, preceding_node = preceding_2)
 
         elif method == '2opt':
-            self.opt2(route1, node1, node2)
+            self._opt2(route1, node1, node2)
 
         else:
             raise Exception
