@@ -1,4 +1,3 @@
-#!/home/golis/.venvs/venv1/bin/python3
 import numpy as np
 
 def near_neigh(routes, distance_matrix, node_dem_l, veh_cap):
@@ -11,7 +10,7 @@ def near_neigh(routes, distance_matrix, node_dem_l, veh_cap):
 
     N = np.size(distance_matrix, 0)
     unchecked_nodes = np.ones(N) # array containing 1s for every unchecked node
-    unchecked_nodes[0] = np.nan
+    unchecked_nodes[0] = np.nan  # removing depot from unchecked nodes
 
     start_node = 0
     route_idx = 0
@@ -45,4 +44,3 @@ def near_neigh(routes, distance_matrix, node_dem_l, veh_cap):
     routes.update_best()
 
     return routes
-

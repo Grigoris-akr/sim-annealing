@@ -4,9 +4,9 @@ import random
 class localSearch:
     def __init__(self, distance_matrix, node_dem_l, veh_cap):
         self.dist_mat = np.array(distance_matrix)
-        self.node_dem = np.array(node_dem_l)
-        self.node_num = self.dist_mat.shape[0] 
-        self.veh_cap = veh_cap
+        self.node_dem = np.array(node_dem_l)    # demand of each node
+        self.node_num = self.dist_mat.shape[0]  # number of nodes (incl. depot)
+        self.veh_cap = veh_cap                  # vehicle capacity
 
     def apply_local_search(self, edges, edges_inv, load, node_route = None, method = ''):
         if method == 'relocation':
@@ -19,9 +19,13 @@ class localSearch:
             raise Exception()
          
     def reloc_1_0(self, edges, edges_inv, load):
-        # route1: p1 -> n1 -> a1 | p1 -------> a1 
-        # route2: n2 -------> a2 | n2 -> n1 -> a2
+        """
+        1-0 relocation method
 
+                    Before           After
+        route1: p1 -> n1 -> a1 | p1 -------> a1 
+        route2: n2 -------> a2 | n2 -> n1 -> a2
+        """
         # get random route
         route1 = random.randint(0, len(edges)-1)
 
@@ -36,7 +40,7 @@ class localSearch:
 
         # skip origin route
         routes_loads = load.copy()
-        routes_loads[route1] = 1000
+        routes_loads[route1] = 10000
 
         eligible_routes = np.argwhere(routes_loads + self.node_dem[node1] <= self.veh_cap).T[0]
         
@@ -67,8 +71,13 @@ class localSearch:
         return route1, node1, route2, node2, delta
 
     def exch_1_1(self, edges, edges_inv, load, node_route):
-        # route1: p1 -> n1 -> a1 | p1 -> n2 -> a1 
-        # route2: p2 -> n2 -> a2 | p2 -> n1 -> a2 
+        """
+        1-1 Exchange method
+
+                    Before           After
+        route1: p1 -> n1 -> a1 | p1 -> n2 -> a1 
+        route2: p2 -> n2 -> a2 | p2 -> n1 -> a2 
+        """
 
         # get random route
         route1 = random.randint(0, len(edges)-1)
@@ -126,10 +135,15 @@ class localSearch:
 
 
     def opt2(self, edges, edges_inv):
-        # -->p1-->.  .<-n2--<--p2<---    -->p1-------->n2---->p2-->-
-        #          \/               ^ =>                           |
-        #          /\               | =>                           V
-        # <--a2<--'  `--->n1-->a1---^    <--a2<----------n1<--a1<---
+        """
+        2-opt method
+
+                  Before                         After
+        -->p1-->.  .<-n2--<--p2<--- || -->p1-------->n2---->p2-->-
+                 \/               ^ ||                           |
+                 /\               | ||                           V
+        <--a2<--'  `--->n1-->a1---^ || <--a2<----------n1<--a1<---
+        """
 
         # get random route
         route = random.randint(0, len(edges)-1)
@@ -143,7 +157,7 @@ class localSearch:
         # get random node1
         node1 = random.choice(node_list)
         
-        # remove node1, its preceding and succeeding nodes
+        # remove node1
         node_list.remove(node1)
         
         if node_list == []:

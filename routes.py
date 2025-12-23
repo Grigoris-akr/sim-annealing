@@ -36,7 +36,7 @@ class AbstractRoutes:
         self.cost = np.zeros(1)  # cost per route
 
         self.best = {}      # edges with best cost
-        self.best_inc = {}
+        self.best_inv = {}
         self.best_cost = np.zeros(1) # best cost per route
 
         self.load = np.zeros(1) # load per route
@@ -67,7 +67,7 @@ class AbstractRoutes:
             return self.cost[route_idx]
 
     def calc_cost(self, route_idx = None):
-        # Calculate cost of a route. If None for all routes
+        # Calculate cost of a route. For all routes if None 
         if route_idx is None:
             x = []
             y = []
@@ -89,7 +89,7 @@ class AbstractRoutes:
     def rollback(self,):
         "reset routes to best"
         self.edges = copy.deepcopy(self.best)
-        self.edges_inv = copy.deepcopy(self.best_inc)
+        self.edges_inv = copy.deepcopy(self.best_inv)
 
         # reset cost
         self.cost = copy.deepcopy(self.best_cost)
@@ -105,7 +105,7 @@ class AbstractRoutes:
 
     def update_best(self,):
         self.best = copy.deepcopy(self.edges)
-        self.best_inc = copy.deepcopy(self.edges_inv)
+        self.best_inv = copy.deepcopy(self.edges_inv)
         self.best_cost = copy.deepcopy(self.cost)
         #self.best_cost = [self.calc_cost(route_idx = route) for route in self.edges.keys()]
         return None
@@ -223,6 +223,8 @@ class AbstractRoutes:
         return None
 
     def commit(self, route1, node1, route2, node2, method = None):
+        # commit the local search described by these arguments
+
         if method == 'relocation':
             self._remove_node(route = route1, node = node1)
             self._insert_node(route = route2, node = node1, preceding_node = node2)
@@ -245,6 +247,8 @@ class AbstractRoutes:
         return None
 
     def print(self, route = None, print_best = True):
+        # print routes method
+
         if print_best:
             routes = self.best.copy()
         else:

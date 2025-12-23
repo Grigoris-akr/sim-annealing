@@ -10,6 +10,7 @@ class temperature:
         self.init_T = init_T
         self.final_T = final_T
         self.alpha = alpha
+        self.iter = 0
 
         if update_method == 'linear':
             self.update = self.update_linear
@@ -18,11 +19,13 @@ class temperature:
         else:
             raise Exception()
     
-    def update_exp(self, iteration):
-        self.now = self.init_T * np.exp(-iteration * self.alpha)
+    def update_exp(self,):
+        self.now = self.init_T * np.exp(-self.iter * self.alpha)
+        self.iter += 1
         
-    def update_linear(self, iteration):
-        self.now = self.init_T - (iteration * self.alpha)
+    def update_linear(self,):
+        self.now = self.init_T - (self.iter * self.alpha)
+        self.iter += 1
         
 
 def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.01, max_iter=1000):
@@ -31,7 +34,6 @@ def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.
 
     T = temperature(temp_upd_method, init_T, final_T, alpha)
 
-    i = 0
     di = 0
     while T.now > final_T:
         for _ in range(max_iter):
@@ -69,8 +71,7 @@ def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.
             routes.rollback()
             di += 1
 
-        i += 1
-        T.update(i)
+        T.update()
 
-    print(f"Iterations: {i*max_iter} -- deviation threshold violated: {di}")
+    print(f"Iterations: {T.iter*max_iter} -- deviation threshold violated: {di}")
     return routes
