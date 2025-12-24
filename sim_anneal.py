@@ -34,8 +34,10 @@ def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.
 
     T = temperature(temp_upd_method, init_T, final_T, alpha)
 
+    # print(f"Final temperature: {final_T}")
     di = 0
     while T.now > final_T:
+        # print(f"Temperature: {T.now:.2f}", end = '\r') # print temperature (affects performance)
         for _ in range(max_iter):
             # choose perturbation
             rand = random.random()

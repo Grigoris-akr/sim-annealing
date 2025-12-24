@@ -3,11 +3,12 @@ import copy
 import random
 import os
 from routes import *
+from local_search import *
 from near_neigh import *
 from sim_anneal import *
 from vns import *
+from sa_vns import *
 from utils import *
-from local_search import *
 
 
 def run(func, *args, **kwargs):
@@ -21,15 +22,14 @@ def run(func, *args, **kwargs):
     return routes
 
 if __name__ == '__main__':
-    # create plots directory
+    # create directory for plots
     os.makedirs("plots", exist_ok=True)
 
     # set RNG seed
-    random.seed(0)
+    random.seed(2)
 
     # Data reading and formatting
-    file = 'prov6.txt'
-    data = read_data(file)
+    data = read_data(file = "prov6.txt")
     distance_matrix = get_distance_matrix(data["node_coords"])
 
     # Create routes and local search objects
@@ -40,10 +40,14 @@ if __name__ == '__main__':
     routes = run(near_neigh, routes, distance_matrix, data["node_dem"], data["veh_cap"])
     
     # Simulated Annealing
-    #routes = run(sim_anneal, routes, ls, temp_upd_method = 'linear', init_T = 50, final_T = 1, alpha = 0.10, max_iter=2000)
-    routes = run(sim_anneal, routes, ls, temp_upd_method = 'exponential', init_T = 50, final_T = 1, alpha = 0.0005, max_iter=10)
+    ##routes = run(sim_anneal, routes, ls, temp_upd_method = 'linear', init_T = 50, final_T = 1, alpha = 0.10, max_iter=2000)
+    #routes = run(sim_anneal, routes, ls, temp_upd_method = 'exponential', init_T = 50, final_T = 1, alpha = 0.0005, max_iter=10)
 
     # VNS
-    routes = run(vns, routes, ls, max_iter = 1000, ls_iter = 1000)
+    #routes = run(vns, routes, ls, max_iter = 1000, ls_iter = 1000)
 
+    # SA-VNS
+    #routes = run(sa_vns, routes, ls, temp_upd_method = 'exponential', init_T = 50, final_T = 1, alpha = 0.0005, ls_iter=1000)
+    routes = run(sa_vns, routes, ls, temp_upd_method = 'linear', init_T = 50, final_T = 1, alpha = 0.10, ls_iter=2000)
+    
     print('finish')

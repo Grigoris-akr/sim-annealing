@@ -22,9 +22,9 @@ def plot(edges, coords, filename = "fig"):
     return None
 
 
-def read_data(filename):
+def read_data(file):
     raw_data = []
-    with open(filename, 'r') as f:
+    with open(file, 'r') as f:
         for line in f:
             raw_data.append(line.split())
     data = {}
