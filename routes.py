@@ -262,7 +262,7 @@ class AbstractRoutes:
         print("Routes:")
         for r in routes_to_print:
             print(f"route {r+1}: ", end = '')
-            print(f"{"0".ljust(2, ' ')} -> ", end ='')
+            print(f"{'0'.ljust(2, ' ')} -> ", end ='')
             n = routes[r][0]
             while n != 0:
                 print(f"{str(n).ljust(2, ' ')} -> ", end ='')
