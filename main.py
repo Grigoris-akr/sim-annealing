@@ -12,7 +12,7 @@ from utils import *
 
 
 def run(func, *args, **kwargs):
-    """ wrap timer and plotting around functions """
+    """ wrap timer and graph plotting around functions """
 
     startTime = time.perf_counter()
     routes = func(*args, **kwargs)
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     os.makedirs("plots", exist_ok=True)
 
     # set RNG seed
-    random.seed(2)
+    random.seed(1) # SA and VNS with seed=1 -> 523.31
 
     # Data reading and formatting
     data = read_data(file = "prov6.txt")
@@ -38,16 +38,19 @@ if __name__ == '__main__':
     
     # Nearest Neighbor
     routes = run(near_neigh, routes, distance_matrix, data["node_dem"], data["veh_cap"])
-    
+
+
+    # == SA and VNS == #
     # Simulated Annealing
-    ##routes = run(sim_anneal, routes, ls, temp_upd_method = 'linear', init_T = 50, final_T = 1, alpha = 0.10, max_iter=2000)
-    #routes = run(sim_anneal, routes, ls, temp_upd_method = 'exponential', init_T = 50, final_T = 1, alpha = 0.0005, max_iter=10)
+    #routes = run(sim_anneal, routes, ls, temp_upd_method = 'linear', init_T = 50, final_T = 1, alpha = 0.10, max_iter = 2000)
+    routes = run(sim_anneal, routes, ls, temp_upd_method = 'exponential', init_T = 50, final_T = 1, alpha = 0.0005, max_iter = 10)
 
     # VNS
-    #routes = run(vns, routes, ls, max_iter = 1000, ls_iter = 1000)
-
+    routes = run(vns, routes, ls, max_iter = 1000, ls_iter = 1000)
+    
+    # == SA-VNS hybrid == #
     # SA-VNS
-    #routes = run(sa_vns, routes, ls, temp_upd_method = 'exponential', init_T = 50, final_T = 1, alpha = 0.0005, ls_iter=1000)
-    routes = run(sa_vns, routes, ls, temp_upd_method = 'linear', init_T = 50, final_T = 1, alpha = 0.10, ls_iter=2000)
+    #routes = run(sa_vns, routes, ls, temp_upd_method = 'exponential', init_T = 50, final_T = 1, alpha = 0.0005, ls_iter = 1000)
+    #routes = run(sa_vns, routes, ls, temp_upd_method = 'linear', init_T = 50, final_T = 1, alpha = 0.10, ls_iter = 2000)
     
     print('finish')

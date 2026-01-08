@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from sim_anneal import temperature
+from utils import temperature
 
 
 def sa_vns(routes, ls, temp_upd_method, init_T, final_T, alpha, ls_iter = 1000):

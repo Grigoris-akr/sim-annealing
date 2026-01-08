@@ -48,3 +48,30 @@ def get_distance_matrix(coords):
     dm = np.asarray([[dist(p1, p2) for p2 in coords_arr] for p1 in coords_arr])
     dm[np.diag_indices_from(dm)] = np.inf
     return dm
+
+
+class temperature:
+    """ Temperature helper class for Simulated Annealing """
+
+    def __init__(self, update_method, init_T, final_T, alpha):
+        self.now = init_T
+        self.init_T = init_T
+        self.final_T = final_T
+        self.alpha = alpha
+        self.iter = 0
+
+        if update_method == 'linear':
+            self.update = self.update_linear
+        elif update_method == 'exponential':
+            self.update = self.update_exp
+        else:
+            raise Exception()
+
+    def update_exp(self,):
+        self.now = self.init_T * np.exp(-self.iter * self.alpha)
+        self.iter += 1
+
+    def update_linear(self,):
+        self.now = self.init_T - (self.iter * self.alpha)
+        self.iter += 1
+

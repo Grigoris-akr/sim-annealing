@@ -1,32 +1,7 @@
 import numpy as np
 import random
+from utils import temperature
 
-
-class temperature:
-    """ Temperature helper class for Simulated Annealing """
-
-    def __init__(self, update_method, init_T, final_T, alpha):
-        self.now = init_T
-        self.init_T = init_T
-        self.final_T = final_T
-        self.alpha = alpha
-        self.iter = 0
-
-        if update_method == 'linear':
-            self.update = self.update_linear
-        elif update_method == 'exponential':
-            self.update = self.update_exp
-        else:
-            raise Exception()
-    
-    def update_exp(self,):
-        self.now = self.init_T * np.exp(-self.iter * self.alpha)
-        self.iter += 1
-        
-    def update_linear(self,):
-        self.now = self.init_T - (self.iter * self.alpha)
-        self.iter += 1
-        
 
 def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.01, max_iter=1000):
     """ Simulated Annealing function """
