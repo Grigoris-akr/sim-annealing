@@ -26,7 +26,7 @@ if __name__ == '__main__':
     os.makedirs("plots", exist_ok=True)
 
     # set RNG seed
-    random.seed(1) # SA and VNS with seed=1 -> 523.31
+    random.seed(1)
 
     # Data reading and formatting
     data = read_data(file = "prov6.txt")
@@ -43,10 +43,16 @@ if __name__ == '__main__':
     # == SA and VNS == #
     # Simulated Annealing
     #routes = run(sim_anneal, routes, ls, temp_upd_method = 'linear', init_T = 50, final_T = 1, alpha = 0.10, max_iter = 2000)
-    routes = run(sim_anneal, routes, ls, temp_upd_method = 'exponential', init_T = 50, final_T = 1, alpha = 0.0005, max_iter = 10)
+    routes = run(sim_anneal, routes, ls, 
+                 temp_upd_method = 'exponential',
+                 init_T = 50, 
+                 final_T = 1, 
+                 alpha = 0.0005, # 0.0002 
+                 max_iter = 10   # 100
+                 )
 
     # VNS
-    routes = run(vns, routes, ls, max_iter = 1000, ls_iter = 1000)
+    routes = run(vns, routes, ls, max_iter = 500, ls_iter = 1000)
     
     # == SA-VNS hybrid == #
     # SA-VNS
