@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from utils import temperature
+from utils import temperature, ls_random_select
 
 
 def sa_vns(routes, ls, temp_upd_method, init_T, final_T, alpha, ls_iter = 1000):
@@ -11,17 +11,11 @@ def sa_vns(routes, ls, temp_upd_method, init_T, final_T, alpha, ls_iter = 1000):
 
     print(f"Final temperature: {final_T}")
     while T.now > final_T:
-        print(f"Temperature: {T.now:.2f}", end = '\r')
+        print(f"Temperature: {T.now:.2f}\tCost: {routes.get_best_cost():0.2f}", end = '\r')
 
         # choose perturbation
-        rand = random.random()
-        if rand > 0.8:
-            ls_method = 'relocation'
-        elif rand > 0.5:
-            ls_method = '2opt'
-        else:
-            ls_method = 'exchange'
-    
+        ls_method = ls_random_select(reloc_perc = 0.2, exch_perc = 0.5, opt_perc = 0.3)
+
         # apply a local search method and get the attributes
         route1, node1, route2, node2, delta = ls.apply_local_search(routes.edges, routes.edges_inv, routes.load, node_route = routes.node_route, method = ls_method)
     
@@ -34,6 +28,9 @@ def sa_vns(routes, ls, temp_upd_method, init_T, final_T, alpha, ls_iter = 1000):
     
         # apply local search algorithms and accept solutions based on SA concept 
         for _ in range(ls_iter):
+            # choose perturbation
+            ls_method = ls_random_select(reloc_perc = 0.2, exch_perc = 0.5, opt_perc = 0.3)
+
             route1, node1, route2, node2, delta = ls.apply_local_search(routes.edges, routes.edges_inv, routes.load, node_route = routes.node_route, method = ls_method)
     
             # if the LS method failed, continue

@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from utils import temperature
+from utils import temperature, ls_random_select
 
 
 def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.01, max_iter=1000):
@@ -12,16 +12,10 @@ def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.
     print(f"Final temperature: {final_T}")
     di = 0
     while T.now > final_T:
-        print(f"Temperature: {T.now:.2f}", end = '\r') # print temperature (affects performance)
+        print(f"Temperature: {T.now:.2f}\tCost: {routes.get_best_cost():0.2f}", end = '\r') # print temperature (affects performance)
         for _ in range(max_iter):
             # choose perturbation
-            rand = random.random()
-            if rand > 0.8: 
-                ls_method = 'relocation'
-            elif rand > 0.5:
-                ls_method = '2opt'
-            else:
-                ls_method = 'exchange'
+            ls_method = ls_random_select(reloc_perc = 0.2, exch_perc = 0.5, opt_perc = 0.3)
 
             # apply a local search method and get the elements
             route1, node1, route2, node2, delta = ls.apply_local_search(routes.edges, routes.edges_inv, routes.load, node_route = routes.node_route, method = ls_method) 

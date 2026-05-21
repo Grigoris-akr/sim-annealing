@@ -1,23 +1,17 @@
 import numpy as np
 import random
-
+from utils import ls_random_select
 
 def vns(routes, ls, max_iter = 100, ls_iter = 1000):
     """ Variable Neighborhood Search """ 
     print("Variable Neighborhood Search")
 
     for i in range(max_iter):
-        print(f"Iteration: {i}/{max_iter}", end = '\r')
+        print(f"Iteration: {i}/{max_iter}\tCost: {routes.get_best_cost():0.2f}", end = '\r')
 
         # choose perturbation
-        rand = random.random()
-        if rand > 0.8:
-            ls_method = 'relocation'
-        elif rand > 0.5:
-            ls_method = '2opt'
-        else:
-            ls_method = 'exchange'
-    
+        ls_method = ls_random_select(reloc_perc = 0.2, exch_perc = 0.5, opt_perc = 0.3)
+
         # apply a local search method and get the attributes
         route1, node1, route2, node2, delta = ls.apply_local_search(routes.edges, routes.edges_inv, routes.load, node_route = routes.node_route, method = ls_method)
     

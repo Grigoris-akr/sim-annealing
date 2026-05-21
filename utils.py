@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import networkx as nx
 import matplotlib.pyplot as plt
 
@@ -49,6 +50,16 @@ def get_distance_matrix(coords):
     dm[np.diag_indices_from(dm)] = np.inf
     return dm
 
+def ls_random_select(reloc_perc, exch_perc, opt_perc):
+    """ Returns a local search method based on the percantages provided"""
+    rand = random.random()
+    if rand > (1 - reloc_perc):
+        ls_method = 'relocation'
+    elif rand > (1 - reloc_perc - opt_perc):
+        ls_method = '2opt'
+    else:
+        ls_method = 'exchange'
+    return ls_method
 
 class temperature:
     """ Temperature helper class for Simulated Annealing """
