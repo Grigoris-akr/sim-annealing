@@ -107,6 +107,12 @@ class localSearch:
         if eligible_nodes.size == 0:
             return None, None, None, None, None
 
+        # check if elegible nodes violate capacity restriction in parent route
+        eligible_nodes = eligible_nodes[np.argwhere(self.node_dem[eligible_nodes] + load[route1] - self.node_dem[node1] <= self.veh_cap)].T[0]
+
+        if eligible_nodes.size == 0:
+            return None, None, None, None, None
+
         # get random position to insert
         node2 = random.choice(eligible_nodes)
         route2 = node_route[node2]
