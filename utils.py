@@ -16,7 +16,7 @@ def plot(edges, coords, filename = "fig"):
             G.add_edge(i, j, color=colors[route % len(colors)])
 
     edge_colors = nx.get_edge_attributes(G,'color').values()
-    nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color=edge_colors)
+    nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color=edge_colors, node_size=100, font_size=6)
 
     plt.savefig(f"{filename}.png")
     plt.close()

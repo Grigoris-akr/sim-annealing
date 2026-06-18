@@ -263,10 +263,10 @@ class AbstractRoutes:
         print("="*95)
         for r in routes_to_print:
             print(f"{r+1}\t| {self.load[r]:0.0f}\t| {self.best_cost[r]:0.1f}\t| ", end = '')
-            print(f"{'0'.ljust(2, ' ')} -> ", end ='')
+            print(f"{'0'.ljust(1, ' ')} -> ", end ='')
             n = routes[r][0]
             while n != 0:
-                print(f"{str(n).ljust(2, ' ')} -> ", end ='')
+                print(f"{str(n).ljust(3, ' ')} -> ", end ='')
                 n = routes[r][n]
             print("0")
         print("")
