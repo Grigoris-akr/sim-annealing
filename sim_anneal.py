@@ -10,7 +10,6 @@ def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.
     T = temperature(temp_upd_method, init_T, final_T, alpha)
 
     print(f"Final temperature: {final_T}")
-    di = 0
     while T.now > final_T:
         print(f"Temperature: {T.now:.2f}\tCost: {routes.get_best_cost():0.2f}", end = '\r') # print temperature (affects performance)
         for _ in range(max_iter):
@@ -37,12 +36,7 @@ def sim_anneal(routes, ls, temp_upd_method, init_T = 50, final_T = 1, alpha = 0.
             elif  np.exp(-delta/T.now) > random.random():
                 routes.commit(route1, node1, route2, node2, method = ls_method)
             
-        # check if deviation threshold is violated
-        if routes.get_delta_from_best() > 500:
-            routes.rollback()
-            di += 1
-
         T.update()
 
-    print(f"Iterations: {T.iter*max_iter} -- deviation threshold violated: {di}")
+    print(f"Iterations: {T.iter*max_iter}")
     return routes
