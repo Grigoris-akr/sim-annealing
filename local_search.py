@@ -167,10 +167,16 @@ class localSearch:
         node_list.remove(node1)
         
         if node_list == []:
-            return None, None, None, None
+            return None, None, None, None, None
 
         # get random node2
         node2 = random.choice(node_list)
+
+        # hack to get it to work
+        if edges[route][node2] == node1:
+            tmp = node1
+            node1 = node2
+            node2 = tmp
         
         # preceding/succeeding nodes
         p1 = edges_inv[route][node1]
